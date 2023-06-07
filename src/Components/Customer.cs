@@ -2,32 +2,26 @@ class Customer
 {
     private static int idCounter = 1;
     private string _id;
-    private string _firstName;
-    private string _lastName;
-    private string _email;
+    public string FirstName { get; set; }
+    public string LastName { get; set; }
+    public string Email { get; set; }
 
-    public string FirstName
+    public Customer(string firstName, string lastName, string email)
     {
-        set => _firstName = value;
-        get => _firstName;
+        FirstName = firstName;
+        LastName = lastName;
+        Email = email;
+        _id = GenerateId();
     }
-
-    public string LastName
-    {
-        set => _lastName = value;
-        get => _lastName;
-    }
-
-    public string Email 
-    {
-        set => _email = value;
-        get => _email;
-    }
-
     private string GenerateId()
     {
-        string id = $"Customer-${idCounter}";
+        string id = $"Customer-{idCounter}";
         idCounter++;
         return id;
+    }
+
+    public override string ToString()
+    {
+        return $"{_id} First Name: {FirstName} Last Name: {LastName} Email: {Email}";
     }
 }
