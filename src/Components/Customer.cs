@@ -2,7 +2,7 @@ namespace Component.CustomersDatabase;
 class Customer 
 {
     private static int idCounter = 1;
-    private string _id;
+    public string Id { get; private set; }
     public string FirstName { get; set; }
     public string LastName { get; set; }
     public string Email { get; set; }
@@ -14,7 +14,7 @@ class Customer
         LastName = lastName;
         Email = email;
         Address = address;
-        _id = GenerateId();
+        Id = GenerateId();
     }
     private string GenerateId()
     {
@@ -25,6 +25,6 @@ class Customer
 
     public override string ToString()
     {
-        return $"{_id} \n Name: {FirstName}{LastName}\n Email: {Email}\n Address: {Address}\n";
+        return $"{Id}, {FirstName} {LastName}, {Email}, {Address}";
     }
 }
