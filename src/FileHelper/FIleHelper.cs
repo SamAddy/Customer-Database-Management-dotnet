@@ -34,6 +34,19 @@ public class FileHelper
         File.AppendAllText(_filePath, content);
     }
 
+    public void ReplaceLine(string lineToReplace, string newLine)
+    {
+        string [] lines = File.ReadAllLines(_filePath);
+        for (int i = 0; i < lines.Length; i++)
+        {
+            if (lines[i] == lineToReplace)
+            {
+                lines[i] = newLine;
+                break;
+            }
+        }
+        File.WriteAllLines(_filePath, lines);
+    }
     public class FileHelperException : Exception
     {
         public FileHelperException(string message) : base(message)
