@@ -32,6 +32,12 @@ public class FileHelper
     public void WriteToFile(string content)
     {
         File.AppendAllText(_filePath, content);
+        
+    }
+
+    public void ReplaceFileContent(string newContent)
+    {
+        File.WriteAllText(_filePath, newContent + Environment.NewLine);
     }
 
     public void ReplaceLine(string lineToReplace, string newLine)
@@ -46,15 +52,5 @@ public class FileHelper
             }
         }
         File.WriteAllLines(_filePath, lines);
-    }
-    public class FileHelperException : Exception
-    {
-        public FileHelperException(string message) : base(message)
-        {
-        }
-
-        public FileHelperException(string message, Exception innerException) : base(message, innerException)
-        {
-        }
     }
 }
