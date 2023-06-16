@@ -1,15 +1,31 @@
 # Customer Database Management
 
-You are tasked with building a customer database application that can store and retrieve customer information. The application should allow users to add, update, delete, and search for customers using various criteria. In addition, the application should be designed to handle large amounts of data efficiently, so it should utilize appropriate data structures and algorithms.
+This is a customer database application that can store and retrieve customer information. The application allows users to add, update, delete, and search for customers. In addition, the application is designed to handle large amounts of data efficiently, by utilizing the appropriate data structures and algorithms.
 
-## Requirements
+## Features
 
-Information of all the customers should be stored in a file called `customers.csv`. Initially, the program should read all the data from file and add data to the database. Any modification to the database should also recorded in the file `customers.csv`. The basic classes would be needed for this project (and create more if you have valid reasons to do so):
+* <b>Add Customer</b> : Allows users to add a new customer to the database by providing their first name, last name, email address, and address.
+* <b>Update Customer</b> : Enables users to update an existing customer's information, including their first name, last name, email address, and address.
+* <b>Get Customer By Id</b> : Provides the ability to retrieve customer information by their unique identifier.
+* <b>Delete Customer</b> : Allows users to remove a customer from the database using their unique identifier.
+* <b>Undo and Redo</b> : Supports undo and redo functionality, allowing users to revert changes or redo previously undone actions.
+* <b>File Persistence</b> : Customer data is stored in a CSV file, ensuring that the data remains persistent across application runs.
+* <b>Error Handling</b> : Includes error handling and validation to handle cases such as duplicate email addresses and invalid input.
 
-1. Create `Customer` class: This class represents a customer and should contain properties such as Id, FirstName, LastName, Email, and Address. You can decide the suitable data types for each.
-2. Create `CustomerDatabase` class: This class should contain the data structure used to store customer information, such as a collection of customers. It should also contain methods for adding, reading, updating, deleting. Extra features:
-    - Email should be unique in the database.
-    - Implement a feature to search customers by their ID
-    - Implement an undo and redo feature which allows users to undo their last action or redo an action that they have undone
-3. Create `FileHelper` class: This class should contain methods for reading and writing customer information to and from the file system.
-4. Create `ExceptionHandler` class: This class should contain methods for handling exceptions that may occur during the execution of the application.
+## Prerrequisites
+
+* .NET Core 3.1 or higher
+
+## Getting Started 
+
+1. Clone the repository or download the source code.
+2. Open the solution in your preferred development environment.
+3. Build the solution to restore dependencies.
+
+## Data Storage
+Customer data is stored in a CSV file located at `src/customers.csv`. The file format is as follows:
+
+```
+Customer-1, John Doe, john@example.com, 123 Main St
+Customer-2, Jane Smith, jane@example.com, 456 Elm St
+```
