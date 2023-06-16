@@ -3,7 +3,7 @@ using Component.CustomersDatabase;
 namespace Component.CustomersDatabase;
 class CustomerDatabase
 {
-    private List<Customer> _customers = new ();
+    private Dictionary<string, Customer> _customers = new ();
     private HashSet<string> _emailAddresses;
     private FileHelper? _fileHelper;
     private Stack<Action> _undoStack;
@@ -13,8 +13,8 @@ class CustomerDatabase
     {
         _fileHelper = new FileHelper(filePath);
         string[] customerData = _fileHelper.GetAll() ?? Array.Empty<string>();
-        _customers = customerData.Length > 0 ? ConvertToCustomers(customerData) : new List<Customer>();
-        _emailAddresses = ExtractEmailAddresses(_customers);
+        _customers = customerData.Length > 0 ? ConvertToCustomers(customerData).ToDictionary(c => c.Id) : new Dictionary<string, Customer>();
+        _emailAddresses = ExtractEmailAddresses(_customers.Values.ToList());
         _undoStack = new Stack<Action>();
         _redoStack = new Stack<Action>();
     }
@@ -25,7 +25,7 @@ class CustomerDatabase
         {
             throw new ArgumentException("A customer with the same email address exist already.");
         }
-        _customers.Add(customer);
+        _customers.Add(customer.Id, customer);
         _emailAddresses.Add(customer.Email.ToLower());
         Action addAction = new Action(ActionType.Add, customer);
         _undoStack.Push(addAction);
@@ -35,41 +35,46 @@ class CustomerDatabase
 
     public void UpdateCustomer(Customer updatedCustomer)
     {
-        Customer customer = _customers.FirstOrDefault((c) => c.Id.Equals(updatedCustomer.Id));
-        if (customer != null)
+        if (!_customers.ContainsKey(updatedCustomer.Id)) 
         {
-            if (!customer.Email.Equals(updatedCustomer.Email, StringComparison.OrdinalIgnoreCase) && _emailAddresses.Contains(updatedCustomer.Email.ToLower()))
-            {
-                throw new ArgumentException("A customer with the same email address already exist.");
-            }
-            Customer prevState = new (customer.Id, customer.FirstName, customer.LastName, customer.Email, customer.Address);
-            Action updateAction = new Action(ActionType.Update, prevState);
-            _undoStack.Push(updateAction);
-            customer.FirstName = updatedCustomer.FirstName;
-            customer.LastName = updatedCustomer.LastName;
-            customer.Email = updatedCustomer.Email;
-            customer.Address = updatedCustomer.Address;
-            UpdateCustomerInFile(customer);
-            Console.WriteLine("Customer info updated in file successfully.");
+            throw new ArgumentException("Customer does not exist.");
         }
+        Customer customer = _customers[updatedCustomer.Id];
+        if (!customer.Email.Equals(updatedCustomer.Email, StringComparison.OrdinalIgnoreCase) && _emailAddresses.Contains(updatedCustomer.Email.ToLower()))
+        {
+            throw new ArgumentException("A customer with the same email address already exist.");
+        }
+        Customer prevState = new (customer.Id, customer.FirstName, customer.LastName, customer.Email, customer.Address);
+        Action updateAction = new Action(ActionType.Update, prevState);
+        _undoStack.Push(updateAction);
+        customer.FirstName = updatedCustomer.FirstName;
+        customer.LastName = updatedCustomer.LastName;
+        customer.Email = updatedCustomer.Email;
+        customer.Address = updatedCustomer.Address;
+        UpdateCustomerInFile(customer);
+        Console.WriteLine("Customer info updated in file successfully.");
     }
 
     public void DeleteCustomer(string id) 
     {
-        Customer customer = _customers.FirstOrDefault((c) => c.Id == id);
-        if (customer != null)
+        if (!_customers.ContainsKey(id)) 
         {
-            Action deleteAction = new Action(ActionType.Delete, customer);
-            _undoStack.Push(deleteAction);
-            _customers.Remove(customer);
-            _emailAddresses.Remove(customer.Email.ToLower());
+            throw new ArgumentException("Customer does not exist.");
         }
-        UpdateFile(customer);
+        Customer customer = _customers[id];
+        Action deleteAction = new Action(ActionType.Delete, customer);
+        _undoStack.Push(deleteAction);
+        _customers.Remove(id);
+        _emailAddresses.Remove(customer.Email.ToLower());
     }
 
-    public Customer? GetCustomerById(string id)
+    public Customer GetCustomerById(string id)
     {
-        return _customers.FirstOrDefault((customer) => customer.Id == id);
+        if (!_customers.ContainsKey(id))
+        {
+            throw new ArgumentException("Customer does not exist");
+        }
+        return _customers[id];
     }
 
     public void Undo()
@@ -83,12 +88,12 @@ class CustomerDatabase
             {
                 case ActionType.Add:
                     Customer addedCustomer = action.Customer;
-                    _customers.Remove(addedCustomer);
-                    _emailAddresses.Remove(addedCustomer.Email.ToLower());
+                    _customers.Add(addedCustomer.Id, addedCustomer);
+                    _emailAddresses.Add(addedCustomer.Email.ToLower());
                     break;
                 case ActionType.Update:
                     Customer prevState = action.Customer;
-                    Customer updatedCustomer = _customers.FirstOrDefault((c) => c.Id == prevState.Id);
+                    Customer updatedCustomer = _customers[prevState.Id];
                     if (updatedCustomer != null)
                     {
                         updatedCustomer.FirstName = prevState.FirstName;
@@ -99,8 +104,8 @@ class CustomerDatabase
                     break;
                 case ActionType.Delete:
                     Customer deletedCustomer = action.Customer;
-                    _customers.Add(deletedCustomer);
-                    _emailAddresses.Add(deletedCustomer.Email.ToLower());
+                    _customers.Remove(deletedCustomer.Id);
+                    _emailAddresses.Remove(deletedCustomer.Email.ToLower());
                     break;
             }
         } 
@@ -117,12 +122,12 @@ class CustomerDatabase
             {
                 case ActionType.Add:
                     Customer addedCustomer = action.Customer;
-                    _customers.Add(addedCustomer);
+                    _customers.Add(addedCustomer.Id, addedCustomer);
                     _emailAddresses.Add(addedCustomer.Email.ToLower());
                     break;
                 case ActionType.Update:
                     Customer updatedCustomer = action.Customer;
-                    Customer customer = _customers.FirstOrDefault((c) => c.Id == updatedCustomer.Id);
+                    Customer customer = _customers[updatedCustomer.Id];
                     if (customer != null)
                     {
                         customer.FirstName = updatedCustomer.FirstName;
@@ -133,7 +138,7 @@ class CustomerDatabase
                     break;
                 case ActionType.Delete:
                     Customer deletedCustomer = action.Customer;
-                    _customers.Remove(deletedCustomer);
+                    _customers.Remove(deletedCustomer.Id);
                     _emailAddresses.Remove(deletedCustomer.Email.ToLower());
                     break;
             }
@@ -167,7 +172,7 @@ class CustomerDatabase
     {
         HashSet<string> emailAddresses = new (StringComparer.OrdinalIgnoreCase);
 
-        foreach (Customer customer in _customers)
+        foreach (Customer customer in _customers.Values)
         {
             emailAddresses.Add(customer.Email.ToLower());
         }
