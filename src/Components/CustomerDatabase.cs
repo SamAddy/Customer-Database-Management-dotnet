@@ -3,7 +3,7 @@ using Component.CustomersDatabase;
 namespace Component.CustomersDatabase;
 class CustomerDatabase
 {
-    private Dictionary<string, Customer> _customers = new ();
+    private Dictionary<string, Customer> _customers = new();
     private HashSet<string> _emailAddresses;
     private FileHelper? _fileHelper;
     private Stack<Action> _undoStack;
@@ -18,7 +18,7 @@ class CustomerDatabase
         _undoStack = new Stack<Action>();
         _redoStack = new Stack<Action>();
     }
-    
+
     public void AddCustomer(Customer customer)
     {
         if (_emailAddresses.Contains(customer.Email.ToLower()))
@@ -35,7 +35,7 @@ class CustomerDatabase
 
     public void UpdateCustomer(Customer updatedCustomer)
     {
-        if (!_customers.ContainsKey(updatedCustomer.Id)) 
+        if (!_customers.ContainsKey(updatedCustomer.Id))
         {
             throw new ArgumentException("Customer does not exist.");
         }
@@ -44,7 +44,7 @@ class CustomerDatabase
         {
             throw new ArgumentException("A customer with the same email address already exist.");
         }
-        Customer prevState = new (customer.Id, customer.FirstName, customer.LastName, customer.Email, customer.Address);
+        Customer prevState = new(customer.Id, customer.FirstName, customer.LastName, customer.Email, customer.Address);
         Action updateAction = new Action(ActionType.Update, prevState);
         _undoStack.Push(updateAction);
         customer.FirstName = updatedCustomer.FirstName;
@@ -55,9 +55,9 @@ class CustomerDatabase
         Console.WriteLine("Customer info updated in file successfully.");
     }
 
-    public void DeleteCustomer(string id) 
+    public void DeleteCustomer(string id)
     {
-        if (!_customers.ContainsKey(id)) 
+        if (!_customers.ContainsKey(id))
         {
             throw new ArgumentException("Customer does not exist.");
         }
@@ -108,7 +108,7 @@ class CustomerDatabase
                     _emailAddresses.Remove(deletedCustomer.Email.ToLower());
                     break;
             }
-        } 
+        }
     }
 
     public void Redo()
@@ -148,7 +148,7 @@ class CustomerDatabase
     private List<Customer> ConvertToCustomers(string[] customerData)
     {
         List<Customer> convertedCustomers = new();
-        
+
         foreach (string data in customerData)
         {
             string[] customerInfo = data.Split(",");
@@ -170,7 +170,7 @@ class CustomerDatabase
 
     private HashSet<string> ExtractEmailAddresses(List<Customer> customers)
     {
-        HashSet<string> emailAddresses = new (StringComparer.OrdinalIgnoreCase);
+        HashSet<string> emailAddresses = new(StringComparer.OrdinalIgnoreCase);
 
         foreach (Customer customer in _customers.Values)
         {
@@ -192,29 +192,35 @@ class CustomerDatabase
             }
         }
         lines = lines?.Where(line => !line.StartsWith(customer.Id)).ToArray();
-        _fileHelper?.WriteToFile(string.Join(Environment.NewLine, lines));
+        if (lines != null)
+        {
+            _fileHelper?.WriteToFile(string.Join(Environment.NewLine, lines));
+        }
     }
 
     private void UpdateFile(Customer customer)
     {
         string[] lines = _fileHelper.GetAll();
-        for (int i = 0; i < lines.Length; i++)
+        if (lines != null)
         {
-            if (lines[i].StartsWith(customer.Id))
+            for (int i = 0; i < lines.Length; i++)
             {
-                Console.WriteLine("Customer to be deleted found: " + lines[i]);
-                lines[i] = string.Empty;
-                break;
+                if (lines[i].StartsWith(customer.Id))
+                {
+                    Console.WriteLine("Customer to be deleted found: " + lines[i]);
+                    lines[i] = string.Empty;
+                    break;
+                }
             }
+            string newContent = string.Join(Environment.NewLine, lines);
+            _fileHelper.ReplaceFileContent(newContent);
+            Console.WriteLine("New content added");
         }
-        string newContent = string.Join(Environment.NewLine, lines);
-        _fileHelper.ReplaceFileContent(newContent);
-        Console.WriteLine("New content added");
     }
 
     public enum ActionType
     {
-        Add, 
+        Add,
         Update,
         Delete
     }
