@@ -12,7 +12,7 @@ This is a customer database application that can store and retrieve customer inf
 * <b>File Persistence</b> : Customer data is stored in a CSV file, ensuring that the data remains persistent across application runs.
 * <b>Error Handling</b> : Includes error handling and validation to handle cases such as duplicate email addresses and invalid input.
 
-## Prerrequisites
+## Prerequisites
 
 * .NET Core 3.1 or higher
 
