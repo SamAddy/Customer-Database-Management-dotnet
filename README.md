@@ -14,7 +14,7 @@ This is a customer database application that can store and retrieve customer inf
 
 ## Prerequisites
 
-* .NET Core 3.1 or higher
+* .NET Core 6 or higher
 
 ## Getting Started 
 
